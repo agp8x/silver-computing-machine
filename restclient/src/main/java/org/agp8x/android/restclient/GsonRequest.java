@@ -7,29 +7,39 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import org.agp8x.android.restclient.adapters.DateTimeTypeAdapter;
 import org.agp8x.android.restclient.data.RestObject;
+import org.joda.time.DateTime;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
  * Created by clemensk on 02.10.16.
  */
 
-public class GsonRequest<T extends RestObject> extends Request<T> {
-    private final Class<T> cls;
-    private final Map<String, String> headers;
-    private final Response.Listener<T> listener;
+public class GsonRequest extends Request {
+    private final Type cls;
+    private Map<String, String> headers;
+    private final Response.Listener listener;
     private final Gson gson;
 
-    public GsonRequest(int method, String url, Class<T> cls, Map<String, String> headers, Response.Listener<T> listener, Response.ErrorListener errorListener) {
+    public GsonRequest(int method, String url, Type cls, Response.Listener listener, Response.ErrorListener errorListener) {
+        this(method, url, cls, null, listener, errorListener);
+    }
+    public GsonRequest(int method, String url, Type cls, Map<String, String> headers, Response.Listener listener, Response.ErrorListener errorListener) {
         super(method, url, errorListener);
         this.cls = cls;
         this.headers = headers;
         this.listener = listener;
-        this.gson=new Gson();
+        GsonBuilder b = new GsonBuilder();
+        b.registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter());
+        gson = b.create();
     }
+
 
     @Override
     public Map<String, String> getHeaders() throws AuthFailureError {
@@ -37,9 +47,10 @@ public class GsonRequest<T extends RestObject> extends Request<T> {
     }
 
     @Override
-    protected Response<T> parseNetworkResponse(NetworkResponse response) {
+    protected Response parseNetworkResponse(NetworkResponse response) {
         try {
             String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+            System.out.println(json);
             return Response.success(gson.fromJson(json, cls), HttpHeaderParser.parseCacheHeaders(response));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -48,7 +59,11 @@ public class GsonRequest<T extends RestObject> extends Request<T> {
     }
 
     @Override
-    protected void deliverResponse(T response) {
+    protected void deliverResponse(Object response) {
         listener.onResponse(response);
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
     }
 }

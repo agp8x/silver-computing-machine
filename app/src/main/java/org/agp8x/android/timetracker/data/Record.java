@@ -44,4 +44,13 @@ public class Record implements RestObject {
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "start=" + start +
+                ", end=" + end +
+                ", desc='" + desc + '\'' +
+                '}';
+    }
 }

@@ -18,14 +18,22 @@ public class RecordTest {
 
     @Before
     public void setUp() throws Exception {
-        GsonBuilder b=new GsonBuilder();
-b.registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter());
-        gson=b.create();
+        GsonBuilder b = new GsonBuilder();
+        b.registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter());
+        gson = b.create();
     }
 
     @Test
     public void testSerialization() throws Exception {
         Record r = new Record(new DateTime(), new DateTime(), "");
         System.out.println(gson.toJson(r));
+    }
+
+    @Test
+    public void testDeserialization() throws Exception {
+        Record r;
+        String json = "{\"start\":\"2016-10-11T12:19:00.600+02:00\",\"end\":\"2016-10-11T12:19:00.719+02:00\",\"desc\":\"\"}";
+        r = gson.fromJson(json, Record.class);
+        System.out.println(r);
     }
 }
